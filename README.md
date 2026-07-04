@@ -1,0 +1,2 @@
+# Quantum Simulator
+A from-scratch quantum circuit simulator built in Python. This project hopes to introduce the writer to introductory quantum information theory via the construction and implementation of tensors, state vector values, quantum gates, etc.
