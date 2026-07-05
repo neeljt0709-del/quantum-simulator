@@ -47,6 +47,8 @@ class Statevector:
         tensor = np.moveaxis(tensor, 0, index) # Moves axis back to appropriate index
 
         self.data = tensor.reshape(2**self.num_qubits) # Reflatten tensor back to a statevector
+
+    # Convenient functions to apply these specific gates
     
     def h(self, index):
         self.apply(h_gate, index)
@@ -59,5 +61,32 @@ class Statevector:
 
     def z(self, index):
         self.apply(z_gate, index)
+
+    # This function is a way of measuring a specific qubit, gain using tensor logic
+    # It is important to note we use numpy's random generator, with seed taken from the Mac OS System
+    def measure(self, index):
+        tensor = self.data.reshape([2] * self.num_qubits)
+        tensor = np.moveaxis(tensor, index, 0)# Move target qubit to front
+
+        prob_0 = np.sum(np.abs(tensor[0])**2)
+        prob_1 = np.sum(np.abs(tensor[1])**2)
+
+        # Randomly generates the outcomes given the weighting of the probabilities 
+        outcome = np.random.choice([0,1], p = [prob_0, prob_1])
+
+        # Zeroes out everything inconsistent with the outcome
+        if outcome == 0:
+            tensor[1] = 0
+        else:
+            tensor[0] = 0
+
+        # Now we must renormalize so that the probabilities sum to 1
+        norm = np.sqrt(np.sum(np.abs(tensor)**2))
+        tensor = tensor/norm
+        
+        tensor = np.moveaxis(tensor, 0, index)
+        self.data = tensor.reshape(2 ** self.num_qubits)
+        return outcome
+
    
     

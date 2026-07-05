@@ -58,3 +58,7 @@ def test_y(): # Tests that y gate flips the zero to imaginary phase one
     sv.y(0)
     expected = np.array([0, 1j], dtype=complex)
     assert np.allclose(sv.data, expected)
+
+
+    # Tests for measurement
+    # Uses a fixed seed rather than an unknown in order to 
