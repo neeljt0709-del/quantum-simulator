@@ -21,7 +21,7 @@ z_gate = np.array([[1,0],[0,-1]], dtype = complex)
 y_gate = np.array([[0, -1j],[1j, 0]], dtype = complex)
 
 # Resets a qubit to 0
-reset_gate = np.array([0,0], [0,0], dtype = complex)
+reset_gate = np.array([[0,0], [0,0]], dtype = complex)
 
 # Rotational gates: rotate around specific axis, given an inputted theta
 def rz(theta):

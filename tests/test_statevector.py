@@ -1,6 +1,7 @@
 # pytest runs all functions in this file beginning with 'test_'
 import numpy as np
 from src.qsim.statevector import Statevector
+import pytest
 
 # Manual tests to check all gates
 # np.allclose checks two arrays to within a small floating-point tolerance
@@ -137,4 +138,109 @@ def test_cnot_phase_kickback():
 # Retrieves (amplitude)^2 for all basis states
 def get_probs(sv):
     return np.abs(sv.data) ** 2
+
+def test_zero_angle(): # Theta = 0 should not alter the state
+    for func in ['rotate_x', 'rotate_y', 'rotate_z']:
+        test = Statevector(1)
+        original = test.data.copy()
+        getattr(test, func)(0.0,0)
+        assert np.allclose(test.data, original) # Checks each axis independently
+
+def test_full_rotation():  # Full rotation should return to -original (global phase flip)
+    for func in ['rotate_x', 'rotate_y', 'rotate_z']:
+        test = Statevector(1)
+        original = test.data.copy()
+        getattr(test, func)(np.pi * 2, 0)
+        assert np.allclose(test.data, -original)
+
+def test_inverses(): # Negative angles are inverses of each other
+    test = Statevector(1)
+    og = test.data.copy()
+    test.rotate_x(np.pi/4,0)
+    test.rotate_x(-np.pi/4,0)
+    assert np.allclose(test.data, og)
+
+def test_rx_pi_exact_amplitude(): # Rx(pi) on |0> should give exactly [0, -1j]
+        test = Statevector(1)
+        test.rotate_x(np.pi, 0)
+        assert np.allclose(test.data, [0, -1j])
+
+def test_ry_pi_exact_amplitude(): # Ry(pi) on |0> should give exactly [0, 1], fully real
+        test = Statevector(1)
+        test.rotate_y(np.pi, 0)
+        assert np.allclose(test.data, [0, 1])
+
+def test_rz_pi_exact_amplitude(): # Rz(pi) on |0> should give exactly [-1j, 0]
+        test = Statevector(1)
+        test.rotate_z(np.pi, 0)
+        assert np.allclose(test.data, [-1j, 0])
+
+# I am too lazy to write these tests, so they were provided by Claude
+class TestApplyStructural:
+
+    def test_normalization_preserved_for_non_rotation_gate(self):  # apply() should preserve normalization for any unitary
+        hadamard = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]], dtype=complex)
+        test = Statevector(1)
+        test.apply(hadamard, 0)
+        assert np.isclose(np.sum(np.abs(test.data) ** 2), 1.0)
+
+    def test_unrelated_qubits_untouched_three_qubit_product_state(self):  # Rotating one qubit shouldn't affect the others
+        test = Statevector(3)
+        test.rotate_x(np.pi, 1)  # flip only the middle qubit
+        probs = np.abs(test.data) ** 2
+        expected = np.zeros(8)
+        expected[2] = 1.0  # |010> -- adjust index if your ordering differs
+        assert np.allclose(probs, expected)
+
+
+class TestIndexing:
+
+    @pytest.mark.parametrize("index,expected_state_index", [
+        (0, 8),   # |1000>
+        (1, 4),   # |0100>
+        (2, 2),   # |0010>
+        (3, 1),   # |0001>
+    ])
+    def test_flip_each_qubit_in_four_qubit_register(self, index, expected_state_index):  # rotate_x(pi) should flip only its target qubit
+        test = Statevector(4)
+        test.rotate_x(np.pi, index)
+        probs = np.abs(test.data) ** 2
+        expected = np.zeros(16)
+        expected[expected_state_index] = 1.0
+        assert np.allclose(probs, expected)
+
+    def test_state_size_consistent_after_gate(self):  # Statevector length should always equal 2**num_qubits
+        test = Statevector(3)
+        test.rotate_y(0.9, 1)
+        assert len(test.data) == 2 ** test.num_qubits
+
+
+class TestEntangledState:
+
+    def test_rotation_on_bell_pair_preserves_normalization(self):  # Rotating one half of an entangled pair shouldn't break normalization
+        test = Statevector(2)
+        hadamard = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]], dtype=complex)
+        test.apply(hadamard, 0)
+        test.cnot(0, 1)  # adjust to your actual entangling gate method name
+        test.rotate_x(0.5, 0)
+        assert np.isclose(np.sum(np.abs(test.data) ** 2), 1.0)
+
+
+class TestParameterEdgeCases:
+
+    def test_negative_angle_inverts_rotation(self):  # Positive rotation followed by its negative should return to original state
+        for func in ['rotate_x', 'rotate_y', 'rotate_z']:
+            test = Statevector(1)
+            original = test.data.copy()
+            getattr(test, func)(0.7, 0)
+            getattr(test, func)(-0.7, 0)
+            assert np.allclose(test.data, original)
+
+
+class TestInvalidInput:
+
+    def test_out_of_range_index_raises(self):  # Out-of-range index should raise, not silently misbehave
+        test = Statevector(2)
+        with pytest.raises(Exception):
+            test.rotate_x(np.pi, 5)
 
