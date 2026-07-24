@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About — Q-SIM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="paper" style="background:var(--paper); color:var(--text-on-paper);">
+
+<header class="site-header" style="background:rgba(237,239,234,0.9); border-bottom:1px solid var(--paper-line); color:var(--text-on-paper);">
+  <a class="brand" href="index.html" style="color:var(--text-on-paper);"><span class="dot"></span> Q-SIM</a>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" style="color:var(--text-on-paper); border-color:var(--paper-line);">☰</button>
+  <ul class="nav-links" id="navLinks" style="background:var(--paper); border-color:var(--paper-line);">
+    <li><a href="index.html#try-it" style="color:var(--text-on-paper-dim);">Try it</a></li>
+    <li><a href="index.html#how-it-works" style="color:var(--text-on-paper-dim);">How it works</a></li>
+    <li><a href="index.html#api-reference" style="color:var(--text-on-paper-dim);">API</a></li>
+    <li><a href="about.html" style="color:var(--text-on-paper);">About</a></li>
+    <li><a class="gh-link" href="https://github.com/your-username/your-repo" target="_blank" rel="noopener" style="color:var(--text-on-paper); border-color:var(--paper-line);">GitHub ↗</a></li>
+  </ul>
+</header>
+
+<section class="about-hero paper">
+  <div class="section-inner">
+    <!-- EDIT: replace "YN" with your initials -->
+    <div class="avatar-placeholder">YN</div>
+    <!-- EDIT: your name -->
+    <h1>About Your Name</h1>
+    <!-- EDIT: your role / one-line identity -->
+    <p class="role">Math student · Quantum computing enthusiast</p>
+  </div>
+</section>
+
+<section class="about-body paper">
+  <div class="about-block">
+    <p class="edit-hint">✎ Edit the sections below — everything in brackets is a placeholder.</p>
+  </div>
+
+  <div class="about-block">
+    <h2>Why I built this</h2>
+    <!-- EDIT: 2-3 sentences on your motivation -->
+    <p>[Write 2–3 sentences about why you got interested in quantum computing, and what building a statevector simulator from scratch taught you — e.g. the tensor-contraction trick for applying gates to individual qubits, or how measurement collapse works under the hood.]</p>
+  </div>
+
+  <div class="about-block">
+    <h2>The project</h2>
+    <!-- EDIT: describe your 4-week research project -->
+    <p>[Describe your current project — e.g. implementing QAOA for Max-Cut on top of this simulator, studying how the approximation ratio scales with circuit depth, and comparing against classical bounds like Goemans-Williamson.]</p>
+  </div>
+
+  <div class="about-block timeline">
+    <h2>Timeline</h2>
+    <ul>
+      <!-- EDIT: fill in your actual milestones -->
+      <li><span class="week">Week 1</span> [Background reading + validate the algorithm on a tiny, brute-forceable case]</li>
+      <li><span class="week">Week 2</span> [Build the full pipeline: circuit construction, cost function, classical optimizer loop]</li>
+      <li><span class="week">Week 3</span> [Run experiments — depth scaling, comparisons against classical baselines]</li>
+      <li><span class="week">Week 4</span> [Write up results, polish the repo, publish]</li>
+    </ul>
+  </div>
+
+  <div class="about-block links">
+    <h2>Find me</h2>
+    <!-- EDIT: replace with your real links -->
+    <a href="https://github.com/your-username" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://linkedin.com/in/your-profile" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="mailto:you@example.com">Email</a>
+  </div>
+</section>
+
+<footer class="site-footer" style="border-top:1px solid var(--paper-line); color:var(--text-on-paper-dim);">
+  <p>Built by <a href="about.html" style="color:var(--text-on-paper);">your name here</a> · <a href="https://github.com/your-username/your-repo" target="_blank" rel="noopener" style="color:var(--text-on-paper);">source on GitHub</a></p>
+</footer>
+
+<script>
+  document.getElementById('navToggle').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+</script>
+</body>
+</html>

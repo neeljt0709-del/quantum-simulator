@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Q-SIM — a quantum statevector simulator</title>
+<meta name="description" content="A from-scratch quantum statevector simulator, with a live Bloch sphere driven by the real gate math." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="index.html"><span class="dot"></span> Q-SIM</a>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#try-it">Try it</a></li>
+    <li><a href="#how-it-works">How it works</a></li>
+    <li><a href="#api-reference">API</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a class="gh-link" href="https://github.com/your-username/your-repo" target="_blank" rel="noopener">GitHub ↗</a></li>
+  </ul>
+</header>
+
+<section class="hero device" id="try-it">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">single-qubit state simulator</p>
+      <h1>Watch a qubit move.</h1>
+      <p class="lede">Every button below runs the exact same complex-amplitude matrix math as the Python simulator underneath this site. Click a gate — the point on the sphere traces the qubit's real trajectory through Hilbert space, and its color is its own phase angle.</p>
+
+      <div class="gate-controls">
+        <button class="gate-btn" data-gate="H">H</button>
+        <button class="gate-btn" data-gate="X">X</button>
+        <button class="gate-btn" data-gate="Y">Y</button>
+        <button class="gate-btn" data-gate="Z">Z</button>
+        <div class="rotation-group">
+          <input type="range" id="thetaSlider" min="-1" max="1" step="0.05" value="0.5" />
+          <span class="theta-label" id="thetaSliderLabel">θ = 0.50π</span>
+        </div>
+        <button class="gate-btn" data-rotation="RX">RX(θ)</button>
+        <button class="gate-btn" data-rotation="RY">RY(θ)</button>
+        <button class="gate-btn" data-rotation="RZ">RZ(θ)</button>
+        <button class="reset-btn" id="resetBtn">Reset ↺</button>
+      </div>
+
+      <div class="circuit-strip" id="circuitStrip">
+        <span class="circuit-empty">|0⟩ — no gates applied yet</span>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="bloch-canvas" id="blochContainer" role="img" aria-label="Interactive 3D Bloch sphere showing the current qubit state"></div>
+      <div class="readout">
+        <div class="readout-row"><span>|ψ⟩ = α|0⟩ + β|1⟩</span><span></span></div>
+        <div class="readout-row"><span>α</span><span><span id="alphaRe">1.000</span> + <span id="alphaIm">0.000</span>i</span></div>
+        <div class="readout-row"><span>β</span><span><span id="betaRe">0.000</span> + <span id="betaIm">0.000</span>i</span></div>
+        <div class="readout-row"><span>θ (polar)</span><span id="thetaVal">0.0°</span></div>
+        <div class="readout-row"><span>φ (azimuth)</span><span id="phiVal">0.0°</span></div>
+        <div class="prob-bars">
+          <div class="readout-row"><span>P(|0⟩)</span><span id="p0">1.000</span></div>
+          <div class="prob-bar-track"><div class="prob-bar-fill" id="p0bar" style="width:100%"></div></div>
+          <div class="readout-row"><span>P(|1⟩)</span><span id="p1">0.000</span></div>
+          <div class="prob-bar-track"><div class="prob-bar-fill" id="p1bar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how paper" id="how-it-works">
+  <div class="section-inner how-grid">
+    <div>
+      <p class="eyebrow">under the hood</p>
+      <h2>Tensors, not 2ⁿ × 2ⁿ matrices</h2>
+      <p>An n-qubit register is stored as a single flat statevector of length 2ⁿ. To apply a gate to one qubit without touching the rest, the simulator reshapes that flat vector into an n-axis tensor — one axis per qubit — and contracts the gate matrix against only the target axis.</p>
+      <p>This is mathematically identical to applying <span class="mono">I ⊗ ⋯ ⊗ U ⊗ ⋯ ⊗ I</span> to the full state, but it never builds that exponentially large matrix. The Bloch sphere above is the one-qubit special case of exactly this operation — once two qubits become entangled (via CNOT), there's no longer a single point on a sphere that represents either qubit alone.</p>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of applying a gate to one qubit axis of a reshaped tensor">
+        <style>
+          .lbl { font: 600 12px 'JetBrains Mono', monospace; fill: #16211f; }
+          .sub { font: 400 10.5px 'Inter', sans-serif; fill: #55635e; }
+          .box { fill: #f6f7f2; stroke: #d7dbd0; stroke-width: 1; }
+        </style>
+        <rect class="box" x="20" y="20" width="110" height="46" rx="6"/>
+        <text class="lbl" x="75" y="40" text-anchor="middle">statevector</text>
+        <text class="sub" x="75" y="55" text-anchor="middle">length 2ⁿ</text>
+
+        <path d="M130 43 H165" stroke="#9fadad" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <rect class="box" x="165" y="20" width="110" height="46" rx="6"/>
+        <text class="lbl" x="220" y="40" text-anchor="middle">reshape</text>
+        <text class="sub" x="220" y="55" text-anchor="middle">[2]×n tensor</text>
+
+        <path d="M275 43 H310" stroke="#9fadad" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <rect class="box" x="310" y="20" width="90" height="46" rx="6"/>
+        <text class="lbl" x="355" y="40" text-anchor="middle">tensordot</text>
+        <text class="sub" x="355" y="55" text-anchor="middle">on axis i</text>
+
+        <g transform="translate(20,110)">
+          <rect class="box" x="0" y="0" width="380" height="150" rx="8"/>
+          <text class="sub" x="14" y="22">qubit axes (n = 4 shown)</text>
+          <g transform="translate(20,45)">
+            <rect width="60" height="34" fill="#e2e5db" stroke="#c7cdbc"/>
+            <text class="sub" x="30" y="21" text-anchor="middle">q0</text>
+            <rect x="80" width="60" height="34" fill="#746ff2" opacity="0.18" stroke="#746ff2"/>
+            <text class="lbl" x="110" y="21" text-anchor="middle" fill="#5a53d6">q1 ← U</text>
+            <rect x="160" width="60" height="34" fill="#e2e5db" stroke="#c7cdbc"/>
+            <text class="sub" x="190" y="21" text-anchor="middle">q2</text>
+            <rect x="240" width="60" height="34" fill="#e2e5db" stroke="#c7cdbc"/>
+            <text class="sub" x="270" y="21" text-anchor="middle">q3</text>
+          </g>
+          <text class="sub" x="14" y="110" width="350">only the highlighted axis is contracted with the</text>
+          <text class="sub" x="14" y="124">2×2 gate matrix — every other axis passes through untouched.</text>
+        </g>
+
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#9fadad" />
+          </marker>
+        </defs>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="api paper" id="api-reference">
+  <div class="section-inner">
+    <p class="eyebrow">reference</p>
+    <h2>API reference</h2>
+
+    <h3>Statevector(n)</h3>
+    <table>
+      <thead><tr><th>Method</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>h(index)</code></td><td>Apply Hadamard to qubit <code>index</code></td></tr>
+        <tr><td><code>x(index)</code> / <code>y(index)</code> / <code>z(index)</code></td><td>Apply Pauli gates</td></tr>
+        <tr><td><code>rotate_x(theta, index)</code> / <code>rotate_y(theta, index)</code> / <code>rotate_z(theta, index)</code></td><td>Apply parameterized rotations</td></tr>
+        <tr><td><code>cnot(control, target)</code></td><td>Apply controlled-NOT</td></tr>
+        <tr><td><code>reset(index)</code></td><td>Reset a qubit to |0⟩</td></tr>
+        <tr><td><code>measure(index)</code></td><td>Collapse and measure a qubit, returns the outcome (0 or 1)</td></tr>
+        <tr><td><code>probabilities()</code></td><td>Returns |amplitude|² for every basis state</td></tr>
+        <tr><td><code>copy()</code></td><td>Returns an independent deep copy of the statevector</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Circuit(n)</h3>
+    <table>
+      <thead><tr><th>Method</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>add_gate(gate, qubits, theta=0)</code></td><td>Append a gate to the circuit. <code>gate</code> is one of <code>h</code>, <code>x</code>, <code>y</code>, <code>z</code>, <code>cnot</code>, <code>reset</code>, <code>measure</code>, <code>rx</code>, <code>ry</code>, <code>rz</code>. <code>qubits</code> is a list of target qubit indices; <code>theta</code> is required for rotation gates.</td></tr>
+        <tr><td><code>implement(sv)</code></td><td>Runs the full gate sequence on a copy of <code>sv</code>, returns <code>(results, final_statevector)</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <p>Built by <a href="about.html">your name here</a> · <a href="https://github.com/your-username/your-repo" target="_blank" rel="noopener">source on GitHub</a></p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/quantum.js"></script>
+<script src="js/bloch.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
